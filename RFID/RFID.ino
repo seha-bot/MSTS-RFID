@@ -2,8 +2,15 @@
 #include<MFRC522.h>
 MFRC522 mfrc522(10,9);
 
+#define BUZZER 7
+#define RED 6
+#define GREEN 5
+
 void setup() {
   Serial.begin(9600);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
   SPI.begin();
   mfrc522.PCD_Init();
   delay(4);
@@ -23,6 +30,29 @@ char toHex(byte v)
       case 14: return 'E';
       case 15: return 'F';
     }
+  }
+}
+
+void statusOK()
+{
+  digitalWrite(BUZZER, HIGH);
+  digitalWrite(GREEN, HIGH);
+  delay(100);
+  digitalWrite(BUZZER, LOW);
+  digitalWrite(GREEN, LOW);
+  delay(100);
+}
+
+void statusBAD()
+{
+  for(int i = 0; i < 3; i++)
+  {
+    digitalWrite(BUZZER, HIGH);
+    digitalWrite(RED, HIGH);
+    delay(50);
+    digitalWrite(BUZZER, LOW);
+    digitalWrite(RED, LOW);
+    delay(50);
   }
 }
 
