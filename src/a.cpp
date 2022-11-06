@@ -27,7 +27,7 @@ int main()
             if(strcmp(usb, USERS[i].tag.c_str()) == 0)
             {
                 match = true;
-                if(getTimeDiff(USERS[i].lastEntry) >= 2)
+                if(USERS[i].lastEntry.size() == 0 || getTimeDiff(USERS[i].lastEntry) >= 2)
                 {
                     USERS[i].lastEntry = getTimeNow();
                     USERS[i].isPresent = !USERS[i].isPresent;
@@ -35,7 +35,6 @@ int main()
                     if(USERS[i].isPresent)
                     {
                         std::cout << "Dobrodošao " << USERS[i].ime << std::endl;
-                        putc('1', arduino);
                         usbWriteOK();
                     }
                     else
