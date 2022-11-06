@@ -7,7 +7,7 @@ MFRC522 mfrc522(10,9);
 #define GREEN 5
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(BUZZER, OUTPUT);
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
@@ -56,7 +56,13 @@ void statusBAD()
   }
 }
 
+byte recv = 0;
 void loop() {
+  recv = Serial.read();
+  if(recv == '1') statusOK();
+  else if(recv == '2') statusBAD();
+  recv = 0;
+  
   if(!mfrc522.PICC_IsNewCardPresent()) return;
   if(!mfrc522.PICC_ReadCardSerial()) return;
 

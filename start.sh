@@ -6,6 +6,7 @@ if [ $# -eq 2 ]
 then
     if [ $2 = "--run" ]
     then
+        screen /dev/ttyUSB0 115200
         ./out/$FILE
     fi
 fi
