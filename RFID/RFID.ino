@@ -4,11 +4,9 @@ MFRC522 mfrc522(10,9);
 
 void setup() {
   Serial.begin(9600);
-  //while(!Serial);
   SPI.begin();
   mfrc522.PCD_Init();
   delay(4);
-  //mfrc522.PCD_DumpVersionToSerial();
 }
 
 char toHex(byte v)

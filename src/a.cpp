@@ -17,11 +17,20 @@ int main()
             if(strcmp(usb, USERS[i].tag.c_str()) == 0)
             {
                 match = true;
-                if(getTimeDiff(USERS[i].lastEntry) >= 3)
+                if(getTimeDiff(USERS[i].lastEntry) >= 2)
                 {
                     USERS[i].lastEntry = currentDateTime();
+                    USERS[i].isPresent = !USERS[i].isPresent;
                     updateUser(USERS[i]);
-                    std::cout << "TAG MATCH " << USERS[i].ime << std::endl;
+                    if(USERS[i].isPresent)
+                    {
+                        std::cout << "Dobrodošao " << USERS[i].ime << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "Vidimo se " << USERS[i].ime << std::endl;
+                    }
+                    
                 }
                 break;
             }
