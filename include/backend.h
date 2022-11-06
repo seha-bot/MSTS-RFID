@@ -1,19 +1,10 @@
 #include<JSON.h>
 #include<iostream>
 #include<curl.h>
+#include<time_diff.h>
 
 const std::string BASE_URL = "https://msts-rfid-default-rtdb.europe-west1.firebasedatabase.app/";
 const std::string USERS_ENDPOINT = "USERS";
-
-//format YYYY-MM-DD.HH:mm:ss
-const std::string currentDateTime() {
-    time_t     now = time(0);
-    struct tm  tstruct;
-    char       buf[80];
-    tstruct = *localtime(&now);
-    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-    return buf;
-}
 
 class User
 {

@@ -1,19 +1,6 @@
 #include<iostream>
 #include<string.h>
 #include<backend.h>
-#include<chrono>
-
-int getTimeDiff(std::string oldTime)
-{
-    std::tm tm = {};
-    strptime(oldTime.c_str(), "%Y-%m-%d.%X", &tm);
-    auto last = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-
-    strptime(currentDateTime().c_str(), "%Y-%m-%d.%X", &tm);
-    auto now = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-
-    return std::chrono::duration<double, std::milli>(now-last).count() * 0.001;
-}
 
 int main()
 {
