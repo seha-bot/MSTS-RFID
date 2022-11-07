@@ -27,11 +27,8 @@ int main()
             if(strcmp(usb, USERS[i].tag.c_str()) == 0)
             {
                 match = true;
-                if(USERS[i].lastEntry.size() == 0 || getTimeDiff(USERS[i].lastEntry) >= 2)
+                if(USERS[i].lastEntry.size() == 0 || getTimeDiff(USERS[i].lastEntry) >= 2) //TODO: uredi ovaj if
                 {
-                    USERS[i].lastEntry = getTimeNow();
-                    USERS[i].isPresent = !USERS[i].isPresent;
-                    updateUser(USERS[i]);
                     if(USERS[i].isPresent)
                     {
                         std::cout << "Dobrodošao " << USERS[i].ime << std::endl;
@@ -42,7 +39,7 @@ int main()
                         std::cout << "Vidimo se " << USERS[i].ime << std::endl;
                         usbWriteOK();
                     }
-                    
+                    addUserRecord(&USERS[i]);
                 }
                 break;
             }

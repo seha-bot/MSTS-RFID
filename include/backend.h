@@ -4,6 +4,7 @@
 
 const std::string BASE_URL = "https://msts-rfid-default-rtdb.europe-west1.firebasedatabase.app/";
 const std::string USERS_ENDPOINT = "USERS";
+const std::string STIME_ENDPOINT = "STIME";
 
 class User
 {
@@ -39,19 +40,47 @@ std::vector<User> getUsers()
     return USERS;
 }
 
-size_t getUserCount()
+void updateUser(User *user)
 {
     JSON json;
-    json = json.TranslateJSON(getSiteData(BASE_URL + USERS_ENDPOINT));
-    return json.GetAllO()[0].GetAllO().size();
+    json.Write("ime", user->ime);
+    json.Write("prezime", user->prezime);
+    json.Write("is_present", user->isPresent);
+    json.Write("last_entry", user->lastEntry);
+    setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
 }
 
-void updateUser(User user)
+std::string getUserDateEndpoint(User *user, std::string date)
+{
+    std::string dMonth = date.substr(0, 7);
+    std::string dDay = date.substr(8, 2);
+    return BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + dMonth + "/" + dDay;
+}
+
+std::vector<std::string> getUserRecords(User *user, std::string date)
+{
+    std::string records = getSiteData(getUserDateEndpoint(user, date));
+    if(records == "null") return std::vector<std::string>();
+    JSON json;
+    json = json.TranslateJSON(records);
+    return json.GetAllO()[0].GetAllS();
+}
+
+void setUserRecords(User *user, std::string date, std::vector<std::string> records)
 {
     JSON json;
-    json.Write("ime", user.ime);
-    json.Write("prezime", user.prezime);
-    json.Write("is_present", user.isPresent);
-    json.Write("last_entry", user.lastEntry);
-    setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user.tag, truncateJSON(json.GenerateJSON()));
+    for(int i = 0; i < records.size(); i++) json.Write(std::to_string(i), records[i]);
+    setSiteData(getUserDateEndpoint(user, date), truncateJSON(json.GenerateJSON()));
+}
+
+void addUserRecord(User *user)
+{
+    std::string date = getTimeNow();
+    user->lastEntry = date;
+    user->isPresent = !user->isPresent;
+    updateUser(user);
+
+    auto records = getUserRecords(user, date);
+    records.push_back(date.substr(11, 8));
+    setUserRecords(user, date, records);
 }
