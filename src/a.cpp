@@ -1,6 +1,8 @@
 #include<iostream>
 #include<string.h>
 #include<backend.h>
+#include<pthread.h>
+#include<unistd.h>
 
 void usbWriteOK()
 {
@@ -11,9 +13,29 @@ void usbWriteBAD()
     system("echo -ne \"2\" > /dev/ttyUSB0");
 }
 
+auto USERS = getUsers();
+
+void* t_smjena(void*)
+{
+    while(1)
+    {
+        auto tm = getTimeNowChrono();
+        if(tm.tm_hour == 19 && tm.tm_min >= 30)
+        {
+            for(int i = 0; i < USERS.size(); i++)
+            {
+                if(USERS[i].isPresent) addUserRecord(&USERS[i]);
+            }
+        }
+        sleep(60);
+    }
+    return nullptr;
+}
+
 int main()
 {
-    auto USERS = getUsers();
+    pthread_t thread_id;
+    pthread_create(&thread_id, 0, t_smjena, 0);
 
     FILE *arduino = fopen("/dev/ttyUSB0", "r");
     char usb[1000];

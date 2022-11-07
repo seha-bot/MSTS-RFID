@@ -22,3 +22,12 @@ int getTimeDiff(std::string oldTime)
 
     return std::chrono::duration<double, std::milli>(now-last).count() * 0.001;
 }
+
+auto getTimeNowChrono()
+{
+    std::tm tm = {};
+    strptime(getTimeNow().c_str(), "%Y-%m-%d.%X", &tm);
+    // auto now = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    // return now;
+    return tm;
+}
