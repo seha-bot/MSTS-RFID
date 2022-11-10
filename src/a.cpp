@@ -1,6 +1,6 @@
 #include<iostream>
-#include<string.h>
 #include<backend.h>
+#include<string.h>
 #include<pthread.h>
 #include<unistd.h>
 
@@ -13,7 +13,7 @@ void usbWriteBAD()
     system("echo -ne \"2\" > /dev/ttyUSB0");
 }
 
-auto USERS = getUsers();
+std::vector<User> USERS;
 
 void* t_smjena(void*)
 {
@@ -32,10 +32,24 @@ void* t_smjena(void*)
     return nullptr;
 }
 
+void* t_rebase(void*)
+{
+    while(1) //TODO: not working, add r/w access bools
+    {
+        sleep(5);
+        USERS = getUsers();
+    }
+    return nullptr;
+}
+
 int main()
 {
+    //TODO: Refactor threads in a new file
     pthread_t thread_id;
     pthread_create(&thread_id, 0, t_smjena, 0);
+    // pthread_create(&thread_id, 0, t_rebase, 0);
+
+    USERS = getUsers();
 
     FILE *arduino = fopen("/dev/ttyUSB0", "r");
     char usb[1000];
@@ -44,7 +58,7 @@ int main()
     {
         fread(usb, 10, 1, arduino); usb[8] = 0;
         bool match = false;
-        for(int i = 0; i < USERS.size(); i++)
+        for(int i = 0; i < USERS.size(); i++) //TODO: for(auto user : USERS)
         {
             if(strcmp(usb, USERS[i].tag.c_str()) == 0)
             {
