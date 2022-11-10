@@ -46,10 +46,11 @@ int main()
 {
     //TODO: Refactor threads in a new file
     pthread_t thread_id;
-    pthread_create(&thread_id, 0, t_smjena, 0);
+    // pthread_create(&thread_id, 0, t_smjena, 0);
     // pthread_create(&thread_id, 0, t_rebase, 0);
 
     USERS = getUsers();
+    db::downloadDB();
 
     FILE *arduino = fopen("/dev/ttyUSB0", "r");
     char usb[1000];

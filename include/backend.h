@@ -84,3 +84,5 @@ void addUserRecord(User *user)
     records.push_back(date.substr(11, 8));
     setUserRecords(user, date, records);
 }
+
+#include<offline.h>
