@@ -50,39 +50,4 @@ void updateUser(User *user)
     setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
 }
 
-std::string getUserDateEndpoint(User *user, std::string date)
-{
-    std::string dMonth = date.substr(0, 7);
-    std::string dDay = date.substr(8, 2);
-    return BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + dMonth + "/" + dDay;
-}
-
-std::vector<std::string> getUserRecords(User *user, std::string date)
-{
-    std::string records = getSiteData(getUserDateEndpoint(user, date));
-    if(records == "null") return std::vector<std::string>();
-    JSON json;
-    json = json.TranslateJSON(records);
-    return json.GetAllO()[0].GetAllS();
-}
-
-void setUserRecords(User *user, std::string date, std::vector<std::string> records)
-{
-    JSON json;
-    for(int i = 0; i < records.size(); i++) json.Write(std::to_string(i), records[i]);
-    setSiteData(getUserDateEndpoint(user, date), truncateJSON(json.GenerateJSON()));
-}
-
-void addUserRecord(User *user)
-{
-    std::string date = getTimeNow();
-    user->lastEntry = date;
-    user->isPresent = !user->isPresent;
-    updateUser(user);
-
-    auto records = getUserRecords(user, date);
-    records.push_back(date.substr(11, 8));
-    setUserRecords(user, date, records);
-}
-
-#include<offline.h>
+#include<api.h>

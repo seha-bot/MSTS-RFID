@@ -24,7 +24,7 @@ void* t_smjena(void*)
         {
             for(int i = 0; i < USERS.size(); i++)
             {
-                if(USERS[i].isPresent) addUserRecord(&USERS[i]);
+                if(USERS[i].isPresent) db::addUserRecord(&USERS[i]);
             }
         }
         sleep(60);
@@ -50,7 +50,8 @@ int main()
     // pthread_create(&thread_id, 0, t_rebase, 0);
 
     USERS = getUsers();
-    db::downloadDB();
+    db::userSync(&USERS[0]);
+    return 0;
 
     FILE *arduino = fopen("/dev/ttyUSB0", "r");
     char usb[1000];
@@ -76,7 +77,7 @@ int main()
                         std::cout << "Vidimo se " << USERS[i].ime << std::endl;
                         usbWriteOK();
                     }
-                    addUserRecord(&USERS[i]);
+                    db::addUserRecord(&USERS[i]);
                 }
                 break;
             }
