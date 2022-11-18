@@ -50,7 +50,10 @@ int main()
     // pthread_create(&thread_id, 0, t_rebase, 0);
 
     USERS = getUsers();
-    db::userSync(&USERS[0]);
+    for(auto user : USERS)
+    {
+        db::userSync(&user);
+    }
     return 0;
 
     FILE *arduino = fopen("/dev/ttyUSB0", "r");

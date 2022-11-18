@@ -22,13 +22,20 @@ std::string getSiteData(std::string site)
         curl_easy_setopt(curl, CURLOPT_URL, site.append(auth).c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_get);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
-        curl_easy_perform(curl);
+        CURLcode curl_code = curl_easy_perform(curl);
+        long http_code = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         curl_easy_cleanup(curl);
+        if(http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK)
+        {
+            return buffer;
+        }
+        else return "";
     }
-    return buffer;
+    return "";
 }
 
-void setSiteData(std::string site, std::string data)
+int setSiteData(std::string site, std::string data)
 {
     curl = curl_easy_init();
     if(curl)
@@ -37,7 +44,15 @@ void setSiteData(std::string site, std::string data)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_put);
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
-        curl_easy_perform(curl);
+        CURLcode curl_code = curl_easy_perform(curl);
+        long http_code = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         curl_easy_cleanup(curl);
+        if(http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK)
+        {
+            return 0;
+        }
+        else return 1;
     }
+    return 1;
 }

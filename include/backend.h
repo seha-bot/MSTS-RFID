@@ -25,7 +25,7 @@ public:
     }
 };
 
-std::vector<User> getUsers()
+std::vector<User> getUsers() //TODO: implement local user database
 {
     JSON json;
     json = json.TranslateJSON(getSiteData(BASE_URL + USERS_ENDPOINT));

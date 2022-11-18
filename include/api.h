@@ -73,6 +73,10 @@ namespace db
         {
             JSON jmonths;
             auto days = readDir("db/" + user->tag + "/" + month);
+            if(days.size() == 0)
+            {
+                system(("rm -r db/" + user->tag + "/" + month + "/").c_str());
+            }
             for(auto day : days)
             {
                 JSON jday(JSON_ARRAY);
@@ -89,12 +93,19 @@ namespace db
     {
         JSON local = db::toJson(user);
         auto months = local.GetAllO();
-        for(auto month : months)
+        for(int m = 0; m < months.size(); m++)
         {
-            auto days = month.GetAllO();
-            for(auto day : days)
+            auto mkeys = local.getKeys();
+            std::string month = mkeys[m];
+
+            auto days = months[m].GetAllO();
+            for(int d = 0; d < days.size(); d++)
             {
-                std::string data = getSiteData(getUserDateEndpoint(user, ));
+                auto dkeys = months[m].getKeys();
+                std::string day = dkeys[d];
+
+                std::string data = getSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month + "/" + day);
+                if(data.size() == 0) continue;
                 std::vector<std::string> records;
                 if(data != "null")
                 {
@@ -103,13 +114,16 @@ namespace db
                     records = json.GetAllO()[0].GetAllS();
                 }
 
-                auto localRecords = day.GetAllS();
-                for(auto record : localRecords)
+                auto localRecords = days[d].GetAllS();
+                records.insert(records.end(), localRecords.begin(), localRecords.end());
+                JSON json; JSON array(JSON_ARRAY);
+                for(auto record : records) array.Write(record);
+                json.Write(day, array);
+                if(setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
                 {
-                    std::cout << record << std::endl;
+                    system(("rm db/" + user->tag + "/" + month + "/" + day + ".txt").c_str());
                 }
             }
         }
-        // setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag, truncateJSON(json));
     }
 }
