@@ -34,10 +34,14 @@ void* t_smjena(void*)
 
 void* t_rebase(void*)
 {
-    while(1) //TODO: not working, add r/w access bools
+    while(1)
     {
+        for(auto user : USERS)
+        {
+            db::userSync(&user);
+            updateUser(&user);
+        }
         sleep(5);
-        USERS = getUsers();
     }
     return nullptr;
 }
@@ -46,41 +50,39 @@ int main()
 {
     //TODO: Refactor threads in a new file
     pthread_t thread_id;
-    // pthread_create(&thread_id, 0, t_smjena, 0);
-    // pthread_create(&thread_id, 0, t_rebase, 0);
+    pthread_create(&thread_id, 0, t_smjena, 0);
+    pthread_create(&thread_id, 0, t_rebase, 0);
 
     USERS = getUsers();
-    for(auto user : USERS)
-    {
-        db::userSync(&user);
-    }
-    return 0;
 
-    FILE *arduino = fopen("/dev/ttyUSB0", "r");
     char usb[1000];
     std::string badRead = getTimeNow();
     while(1)
     {
+        FILE *arduino = fopen("/dev/ttyUSB0", "r"); //TODO: add better null safety
+        if(!arduino) continue;
         fread(usb, 10, 1, arduino); usb[8] = 0;
+        fclose(arduino);
+        
         bool match = false;
-        for(int i = 0; i < USERS.size(); i++) //TODO: for(auto user : USERS)
+        for(auto& user : USERS)
         {
-            if(strcmp(usb, USERS[i].tag.c_str()) == 0)
+            if(strcmp(usb, user.tag.c_str()) == 0)
             {
                 match = true;
-                if(USERS[i].lastEntry.size() == 0 || getTimeDiff(USERS[i].lastEntry) >= 2) //TODO: uredi ovaj if
+                if(getTimeDiff(user.lastEntry) >= 2)
                 {
-                    if(USERS[i].isPresent)
+                    if(db::addUserRecord(&user) != 0) match = false;
+                    if(user.isPresent)
                     {
-                        std::cout << "Dobrodošao " << USERS[i].ime << std::endl;
+                        std::cout << "Dobrodošao " << user.ime << std::endl;
                         usbWriteOK();
                     }
                     else
                     {
-                        std::cout << "Vidimo se " << USERS[i].ime << std::endl;
+                        std::cout << "Vidimo se " << user.ime << std::endl;
                         usbWriteOK();
                     }
-                    db::addUserRecord(&USERS[i]);
                 }
                 break;
             }

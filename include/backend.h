@@ -1,5 +1,5 @@
 #include<JSON.h>
-#include<curl.h>
+#include<io.h>
 #include<time_diff.h>
 
 const std::string BASE_URL = "https://msts-rfid-default-rtdb.europe-west1.firebasedatabase.app/";
@@ -21,14 +21,15 @@ public:
         this->ime = ime;
         this->prezime = prezime;
         this->isPresent = isPresent;
-        this->lastEntry = lastEntry;
+        if(lastEntry.size() == 0) this->lastEntry = getTimeNow();
+        else this->lastEntry = lastEntry;
     }
 };
 
 std::vector<User> getUsers() //TODO: implement local user database
 {
     JSON json;
-    json = json.TranslateJSON(getSiteData(BASE_URL + USERS_ENDPOINT));
+    json = json.TranslateJSON(io::getSiteData(BASE_URL + USERS_ENDPOINT));
     std::vector<JSON> list = json.GetAllO();
     std::vector<std::string> keys = json.getKeys();
 
@@ -47,7 +48,7 @@ void updateUser(User *user)
     json.Write("prezime", user->prezime);
     json.Write("is_present", user->isPresent);
     json.Write("last_entry", user->lastEntry);
-    setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
+    io::setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
 }
 
 #include<api.h>

@@ -1,6 +1,4 @@
 #include<iostream>
-#include<string.h>
-#include<dirent.h>
 
 namespace db
 {
@@ -14,16 +12,7 @@ namespace db
     std::vector<std::string> getUserRecords(User *user, std::string date)
     {
         auto path = db::getUserDateEndpoint(user, date);
-        FILE * db = fopen(path.first.append(path.second.append(".txt")).c_str(), "r");
-        if(!db) return std::vector<std::string>();
-        fseek(db, 0, SEEK_END);
-        long fsize = ftell(db);
-        fseek(db, 0, SEEK_SET);
-        char* string = new char[fsize + 1];
-        fread(string, fsize, 1, db);
-        std::string buffer = string;
-        delete[] string;
-        fclose(db);
+        std::string buffer = io::readFile(path.first.append(path.second.append(".txt")));
 
         std::string record = "";
         std::vector<std::string> records;
@@ -40,39 +29,29 @@ namespace db
         return records;
     }
 
-    void addUserRecord(User *user)
+    int addUserRecord(User *user)
     {
         std::string date = getTimeNow();
-        user->lastEntry = date;
-        user->isPresent = !user->isPresent;
-
         auto path = db::getUserDateEndpoint(user, date);
         system(("mkdir -p " + path.first).c_str());
         FILE * db = fopen(path.first.append(path.second.append(".txt")).c_str(), "a");
-        if(!db) return;
+        if(!db) return 1;
         fprintf(db, "%s\n", date.substr(11, 8).c_str());
         fclose(db);
-    }
 
-    std::vector<std::string> readDir(std::string path)
-    {
-        DIR * dir = opendir(path.c_str());
-        if(!dir) return std::vector<std::string>();
-        struct dirent * f;
-        std::vector<std::string> files;
-        while(f = readdir(dir)) if(strcmp(f->d_name, ".") != 0 && strcmp(f->d_name, "..") != 0) files.push_back(f->d_name);
-        closedir(dir);
-        return files;
+        user->lastEntry = date;
+        user->isPresent = !user->isPresent;
+        return 0;
     }
 
     JSON toJson(User *user)
     {
         JSON json;
-        auto months = readDir("db/" + user->tag);
+        auto months = io::readDir("db/" + user->tag);
         for(auto month : months)
         {
             JSON jmonths;
-            auto days = readDir("db/" + user->tag + "/" + month);
+            auto days = io::readDir("db/" + user->tag + "/" + month);
             if(days.size() == 0)
             {
                 system(("rm -r db/" + user->tag + "/" + month + "/").c_str());
@@ -81,6 +60,7 @@ namespace db
             {
                 JSON jday(JSON_ARRAY);
                 auto records = getUserRecords(user, month + "-" + day.substr(0, 2));
+                if(records.size() == 0) return JSON();
                 for(auto record : records) jday.Write(record);
                 jmonths.Write(day.substr(0, 2), jday);
             }
@@ -104,7 +84,7 @@ namespace db
                 auto dkeys = months[m].getKeys();
                 std::string day = dkeys[d];
 
-                std::string data = getSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month + "/" + day);
+                std::string data = io::getSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month + "/" + day);
                 if(data.size() == 0) continue;
                 std::vector<std::string> records;
                 if(data != "null")
@@ -119,7 +99,7 @@ namespace db
                 JSON json; JSON array(JSON_ARRAY);
                 for(auto record : records) array.Write(record);
                 json.Write(day, array);
-                if(setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
+                if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
                 {
                     system(("rm db/" + user->tag + "/" + month + "/" + day + ".txt").c_str());
                 }
