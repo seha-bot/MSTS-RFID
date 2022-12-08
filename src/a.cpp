@@ -15,43 +15,42 @@ void usbWriteBAD()
 
 std::vector<User> USERS;
 
-// void* t_smjena(void*)
-// {
-//     while(1)
-//     {
-//         auto tm = getTimeNowChrono();
-//         if(tm.tm_hour == 19 && tm.tm_min >= 30)
-//         {
-//             for(int i = 0; i < USERS.size(); i++)
-//             {
-//                 if(USERS[i].isPresent) db::addUserRecord(&USERS[i]);
-//             }
-//         }
-//         sleep(60);
-//     }
-//     return nullptr;
-// }
+DWORD WINAPI t_smjena(LPVOID lpParameter)
+{
+    while(1)
+    {
+        auto tm = getTimeNowChrono();
+        if(tm.tm_hour == 19 && tm.tm_min >= 30)
+        {
+            for(int i = 0; i < USERS.size(); i++)
+            {
+                if(USERS[i].isPresent) db::addUserRecord(&USERS[i]);
+            }
+        }
+        Sleep(60000);
+    }
+    return 0;
+}
 
-// void* t_rebase(void*)
-// {
-//     while(1)
-//     {
-//         for(auto user : USERS)
-//         {
-//             db::userSync(&user);
-//             updateUser(&user);
-//         }
-//         sleep(5);
-//     }
-//     return nullptr;
-// }
+DWORD WINAPI t_rebase(LPVOID lpParameter)
+{
+    while(1)
+    {
+        for(auto user : USERS)
+        {
+            db::userSync(&user);
+            updateUser(&user);
+        }
+        Sleep(5000);
+    }
+    return 0;
+}
 
 int main()
 {
-    // //TODO: Refactor threads in a new file
-    // pthread_t thread_id;
-    // pthread_create(&thread_id, 0, t_smjena, 0);
-    // pthread_create(&thread_id, 0, t_rebase, 0);
+    DWORD thread_id;
+	CreateThread(0, 0, t_smjena, 0, 0, 0);
+	CreateThread(0, 0, t_rebase, 0, 0, 0);
 
     USERS = getUsers();
 
