@@ -1,31 +1,37 @@
 #include<string>
-#include<chrono>
+#include<time.h>
 
 //format YYYY-MM-DD.HH:mm:ss
 const std::string getTimeNow() {
     time_t     now = time(0);
-    std::tm  tstruct;
+    struct tm  tstruct;
     char       buf[80];
     tstruct = *localtime(&now);
-    // strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
     return buf;
+}
+
+time_t atot(std::string strtime)
+{
+    time_t now = time(0);
+    struct tm tstruct = {
+        .tm_sec = stoi(strtime.substr(17, 2)),
+        .tm_min = stoi(strtime.substr(14, 2)),
+        .tm_hour = stoi(strtime.substr(11, 2)),
+        .tm_mday = stoi(strtime.substr(8, 2)),
+        .tm_mon = stoi(strtime.substr(5, 2)) - 1,
+        .tm_year = stoi(strtime.substr(0, 4)) - 1900,
+        .tm_wday = -1,
+        .tm_yday = -1,
+        .tm_isdst = -1
+    };
+    char       buf[80];
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    std::cout << "DEBUG " << buf << std::endl;
+    return mktime(&tstruct);
 }
 
 int getTimeDiff(std::string oldTime)
 {
-    std::tm tm = {};
-    // strptime(oldTime.c_str(), "%Y-%m-%d.%X", &tm);
-    auto last = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-
-    // strptime(getTimeNow().c_str(), "%Y-%m-%d.%X", &tm);
-    auto now = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-
-    return std::chrono::duration<double, std::milli>(now-last).count() * 0.001;
-}
-
-std::tm getTimeNowChrono()
-{
-    std::tm tm = {};
-    // strptime(getTimeNow().c_str(), "%Y-%m-%d.%X", &tm);
-    return tm;
+    return atot(getTimeNow()) - atot(oldTime);
 }
