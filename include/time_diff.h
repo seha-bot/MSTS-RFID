@@ -27,7 +27,6 @@ time_t atot(std::string strtime)
     };
     char       buf[80];
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-    std::cout << "DEBUG " << buf << std::endl;
     return mktime(&tstruct);
 }
 

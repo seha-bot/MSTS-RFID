@@ -32,6 +32,10 @@ namespace io
             curl_easy_setopt(curl, CURLOPT_URL, site.append(auth).c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_get);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
+            // curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
             CURLcode curl_code = curl_easy_perform(curl);
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
@@ -54,6 +58,8 @@ namespace io
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_put);
             curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
             CURLcode curl_code = curl_easy_perform(curl);
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);

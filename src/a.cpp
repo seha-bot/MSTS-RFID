@@ -19,7 +19,8 @@ DWORD WINAPI t_smjena(LPVOID lpParameter)
 {
     while(1)
     {
-        auto tm = getTimeNowChrono();
+        time_t tt = atot(getTimeNow());
+        auto tm = *localtime(&tt);
         if(tm.tm_hour == 19 && tm.tm_min >= 30)
         {
             for(int i = 0; i < USERS.size(); i++)
@@ -48,11 +49,21 @@ DWORD WINAPI t_rebase(LPVOID lpParameter)
 
 int main()
 {
-    DWORD thread_id;
-	CreateThread(0, 0, t_smjena, 0, 0, 0);
-	CreateThread(0, 0, t_rebase, 0, 0, 0);
+    // DWORD thread_id;
+	// CreateThread(0, 0, t_smjena, 0, 0, 0);
+	// CreateThread(0, 0, t_rebase, 0, 0, 0);
 
     USERS = getUsers();
+
+    for(auto user : USERS)
+    {
+        std::cout << user.ime << std::endl;
+    }
+
+    USERS[0].ime = "nekoime";
+    updateUser(&USERS[0]);
+
+    return 0;
 
     char usb[1000];
     std::string badRead = getTimeNow();
