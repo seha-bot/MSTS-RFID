@@ -3,35 +3,22 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:desktop/app/interface/constants.dart';
+import 'package:desktop/app/interface/models.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-class User {
-  User(this.tag, this.ime, this.prezime, this.isPresent);
-
-  final String tag;
-  final String ime;
-  final String prezime;
-  bool isPresent;
-
-  @override
-  String toString() {
-    return "$ime $prezime";
-  }
-}
 
 class HomeController extends GetxController {
   ScrollController scroll = ScrollController();
   var search = "".obs;
   var locked = false.obs;
 
-  final root = "C:\\db";
   List<User> oldUsers = [];
   RxList<User> users = RxList<User>();
   Queue<User> red = Queue();
 
-  void getUsers() async {
-    final f = File("$root\\USERS.json");
+  void getUsers() {
+    final f = File("${AppConstants.root}\\USERS.json");
     Map<String, dynamic> json = jsonDecode(f.readAsStringSync());
     users.clear();
     json.forEach((key, value) {
@@ -82,7 +69,6 @@ class HomeController extends GetxController {
       oldUsers = List.from(users);
       locked.value = true;
       while (red.isNotEmpty) {
-        print("${red.first}");
         scroll.animateTo(0.0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
         await Future.delayed(const Duration(seconds: 1, milliseconds: 500));

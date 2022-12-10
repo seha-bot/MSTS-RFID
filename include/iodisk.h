@@ -7,21 +7,18 @@
 
 namespace io
 {
-    namespace
+    size_t write_get(void *contents, size_t size, size_t nmemb, void *userp)
     {
-        size_t write_get(void *contents, size_t size, size_t nmemb, void *userp)
-        {
-            ((std::string*)userp)->append((char*)contents, size * nmemb);
-            return size * nmemb;
-        }
-        size_t write_put(void *buffer, size_t size, size_t nmemb, void *userp)
-        {
-            return size * nmemb;
-        }
-
-        CURL *curl;
-        const char* auth = ".json?auth=VH0KFbDUHbBlceeXYuxtktsloiaQnp69FKQjnbAO";
+        ((std::string*)userp)->append((char*)contents, size * nmemb);
+        return size * nmemb;
     }
+    size_t write_put(void *buffer, size_t size, size_t nmemb, void *userp)
+    {
+        return size * nmemb;
+    }
+
+    CURL *curl;
+    const char* auth = ".json?auth=VH0KFbDUHbBlceeXYuxtktsloiaQnp69FKQjnbAO";
     
     std::string getSiteData(std::string site)
     {

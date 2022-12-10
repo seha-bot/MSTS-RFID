@@ -2,10 +2,7 @@
 
 namespace db
 {
-    namespace
-    {
-        const std::string basePath = "C:\\db\\";
-    }
+    const std::string basePath = "C:\\db\\";
 
     std::pair<std::string, std::string> getUserDateEndpoint(User *user, std::string date)
     {

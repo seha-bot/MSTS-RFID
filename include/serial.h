@@ -3,10 +3,7 @@
 
 namespace serial
 {
-    namespace
-    {
-        HANDLE hComm;
-    }
+    HANDLE hComm;
 
     void openPort(std::string port)
     {

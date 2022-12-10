@@ -94,6 +94,10 @@ int main()
         {
             badRead = getTimeNow();
             std::cout << "TAG DID NOT MATCH" << std::endl;
+            //TODO: too much file write repetition code. Can be refactored.
+            FILE * fp = fopen((db::basePath + "NEW").c_str(), "w");
+            if(fp) fprintf(fp, "%s\n", usb.c_str());
+            fclose(fp);
             usbWriteBAD();
         }
     }
