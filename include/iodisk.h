@@ -75,16 +75,16 @@ namespace io
 
     std::string readFile(std::string path)
     {
-        FILE * db = fopen(path.c_str(), "r");
-        if(!db) return "";
-        fseek(db, 0, SEEK_END);
-        long fsize = ftell(db);
-        fseek(db, 0, SEEK_SET);
+        FILE * fp = fopen(path.c_str(), "r");
+        if(!fp) return "";
+        fseek(fp, 0, SEEK_END);
+        long fsize = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
         char* string = new char[fsize + 1];
-        fread(string, fsize, 1, db);
+        fread(string, fsize, 1, fp);
         std::string buffer = string;
         delete[] string;
-        fclose(db);
+        fclose(fp);
         return buffer;
     }
 

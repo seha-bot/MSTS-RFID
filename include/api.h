@@ -2,11 +2,16 @@
 
 namespace db
 {
+    namespace
+    {
+        const std::string basePath = "C:\\db\\";
+    }
+
     std::pair<std::string, std::string> getUserDateEndpoint(User *user, std::string date)
     {
         std::string dMonth = date.substr(0, 7);
         std::string dDay = date.substr(8, 2);
-        return std::make_pair("db\\" + user->tag + "\\" + dMonth + "\\", dDay);
+        return std::make_pair(basePath + user->tag + "\\" + dMonth + "\\", dDay);
     }
 
     std::vector<std::string> getUserRecords(User *user, std::string date)
@@ -47,19 +52,19 @@ namespace db
     JSON toJson(User *user)
     {
         JSON json;
-        auto months = io::readDir("db\\" + user->tag);
+        auto months = io::readDir(basePath + user->tag);
         for(auto month : months)
         {
             JSON jmonths;
-            auto days = io::readDir("db\\" + user->tag + "\\" + month);
+            auto days = io::readDir(basePath + user->tag + "\\" + month);
             if(days.size() == 0)
             {
-                system(("rmdir db\\" + user->tag + "\\" + month + "\\").c_str());
+                system(("rmdir " + basePath + user->tag + "\\" + month + "\\").c_str());
             }
             for(auto day : days)
             {
                 JSON jday(JSON_ARRAY);
-                auto records = getUserRecords(user, month + "-" + day.substr(0, 2));
+                auto records = db::getUserRecords(user, month + "-" + day.substr(0, 2));
                 if(records.size() == 0) return JSON();
                 for(auto record : records) jday.Write(record);
                 jmonths.Write(day.substr(0, 2), jday);
@@ -101,7 +106,7 @@ namespace db
                 json.Write(day, array);
                 if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
                 {
-                    system(("del db\\" + user->tag + "\\" + month + "\\" + day + ".txt").c_str());
+                    system(("del " + basePath + user->tag + "\\" + month + "\\" + day + ".txt").c_str());
                 }
             }
         }
