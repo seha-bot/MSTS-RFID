@@ -2,6 +2,8 @@
 #include<iodisk.h>
 #include<time_diff.h>
 
+//TODO: simplify code structure: backend.h and api.h serve almost same purpose so merge them
+
 const std::string BASE_URL = "https://msts-rfid-default-rtdb.europe-west1.firebasedatabase.app/";
 const std::string USERS_ENDPOINT = "USERS";
 const std::string STIME_ENDPOINT = "STIME";
@@ -26,7 +28,7 @@ public:
     }
 };
 
-std::vector<User> getUsers() //TODO: implement local user database
+std::vector<User> getUsers()
 {
     JSON json;
     json = json.TranslateJSON(io::getSiteData(BASE_URL + USERS_ENDPOINT));

@@ -53,6 +53,7 @@ int main()
     CreateThread(0, 0, t_rebase, 0, 0, 0);
 
     USERS = getUsers();
+    db::recordUsers(USERS);
 
     serial::openPort("COM5");
     std::string badRead = getTimeNow();
@@ -71,6 +72,7 @@ int main()
                 {
                     if(db::addUserRecord(&user) == 0)
                     {
+                        db::recordUsers(USERS);
                         if(user.isPresent)
                         {
                             std::cout << "Dobrodosao " << user.ime << std::endl;

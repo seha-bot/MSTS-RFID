@@ -49,6 +49,27 @@ namespace db
         return 0;
     }
 
+    void recordUsers(std::vector<User> USERS)
+    {
+        JSON json;
+        for(auto user : USERS)
+        {
+            JSON j_user;
+            j_user.Write("ime", user.ime);
+            j_user.Write("prezime", user.prezime);
+            j_user.Write("is_present", user.isPresent);
+            json.Write(user.tag, j_user);
+        }
+        FILE * fp = fopen((basePath + "USERS.json").c_str(), "w");
+        if(!fp)
+        {
+            std::cout << "ERROR: can't write users." << std::endl;
+            return;
+        }
+        fprintf(fp, "%s\n", (json.GenerateJSON()).c_str());
+        fclose(fp);
+    }
+
     JSON toJson(User *user)
     {
         JSON json;
