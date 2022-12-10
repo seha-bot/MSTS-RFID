@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:get/get.dart';
 
@@ -21,7 +20,7 @@ class User {
 }
 
 class HomeController extends GetxController {
-  var fajl = "reading...".obs;
+  var search = "".obs;
 
   final root = "C:\\db";
   bool locked = false;
@@ -35,12 +34,24 @@ class HomeController extends GetxController {
     users.clear();
     json.forEach((key, value) {
       if (value["ime"] == "uprava") return;
-      users.add(User(
-        key,
-        value["ime"],
-        value["prezime"],
-        value["is_present"],
-      ));
+      String kveri = search.value.toLowerCase().trim();
+      bool any = false;
+      kveri.split(" ").forEach((combination) {
+        if (value["ime"].toLowerCase().contains(combination) ||
+            value["prezime"].toLowerCase().contains(combination)) {
+          any = true;
+        }
+      });
+      if (kveri == "prisutan" && value["is_present"] ||
+          kveri == "odsutan" && !value["is_present"] ||
+          any) {
+        users.add(User(
+          key,
+          value["ime"],
+          value["prezime"],
+          value["is_present"],
+        ));
+      }
     });
   }
 
