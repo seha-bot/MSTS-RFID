@@ -1,16 +1,15 @@
 #include<iostream>
 #include<backend.h>
 #include<string.h>
-// #include<pthread.h>
-#include<windows.h>
+#include<serial.h>
 
 void usbWriteOK()
 {
-    system("echo -ne \"1\" > /dev/ttyUSB0");
+    // system("echo -ne \"1\" > /dev/ttyUSB0");
 }
 void usbWriteBAD()
 {
-    system("echo -ne \"2\" > /dev/ttyUSB0");
+    // system("echo -ne \"2\" > /dev/ttyUSB0");
 }
 
 std::vector<User> USERS;
@@ -49,50 +48,41 @@ DWORD WINAPI t_rebase(LPVOID lpParameter)
 
 int main()
 {
-    // DWORD thread_id;
-	// CreateThread(0, 0, t_smjena, 0, 0, 0);
-	// CreateThread(0, 0, t_rebase, 0, 0, 0);
+    DWORD thread_id;
+    CreateThread(0, 0, t_smjena, 0, 0, 0);
+    CreateThread(0, 0, t_rebase, 0, 0, 0);
 
     USERS = getUsers();
 
-    for(auto user : USERS)
-    {
-        std::cout << user.ime << std::endl;
-    }
-
-    USERS[0].ime = "nekoime";
-    updateUser(&USERS[0]);
-
-    return 0;
-
-    char usb[1000];
+    serial::openPort("COM5");
     std::string badRead = getTimeNow();
     while(1)
     {
-        FILE *arduino = fopen("/dev/ttyUSB0", "r"); //TODO: add better null safety
-        if(!arduino) continue;
-        fread(usb, 10, 1, arduino); usb[8] = 0;
-        fclose(arduino);
-        
+        std::string usb = serial::readTag();
+        if(usb.empty()) continue;
+
         bool match = false;
         for(auto& user : USERS)
         {
-            if(strcmp(usb, user.tag.c_str()) == 0)
+            if(usb.compare(user.tag) == 0)
             {
                 match = true;
                 if(getTimeDiff(user.lastEntry) >= 2)
                 {
-                    if(db::addUserRecord(&user) != 0) match = false;
-                    if(user.isPresent)
+                    if(db::addUserRecord(&user) == 0)
                     {
-                        std::cout << "Dobrodošao " << user.ime << std::endl;
-                        usbWriteOK();
+                        if(user.isPresent)
+                        {
+                            std::cout << "Dobrodosao " << user.ime << std::endl;
+                            usbWriteOK();
+                        }
+                        else
+                        {
+                            std::cout << "Vidimo se " << user.ime << std::endl;
+                            usbWriteOK();
+                        }
                     }
-                    else
-                    {
-                        std::cout << "Vidimo se " << user.ime << std::endl;
-                        usbWriteOK();
-                    }
+                    else match = false;
                 }
                 break;
             }

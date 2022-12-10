@@ -15,7 +15,7 @@ namespace serial
 
         DCB dcbSerialParam = {0};
         GetCommState(hComm, &dcbSerialParam);
-        dcbSerialParam.BaudRate=CBR_9600;
+        dcbSerialParam.BaudRate=CBR_115200;
         dcbSerialParam.ByteSize=8;
         dcbSerialParam.StopBits=ONESTOPBIT;
         dcbSerialParam.Parity=NOPARITY;
@@ -31,7 +31,7 @@ namespace serial
         while(1)
         {
             ReadFile(hComm, c, 1, &word, 0);
-            if(c[0] == '\n') break;
+            if(c[0] == '\n' || c[0] == '\r' || c[0] == '\0') return s;
             s += c[0];
         }
         return s;

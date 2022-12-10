@@ -6,7 +6,7 @@ namespace db
     {
         std::string dMonth = date.substr(0, 7);
         std::string dDay = date.substr(8, 2);
-        return std::make_pair("db/" + user->tag + "/" + dMonth + "/", dDay);
+        return std::make_pair("db\\" + user->tag + "\\" + dMonth + "\\", dDay);
     }
 
     std::vector<std::string> getUserRecords(User *user, std::string date)
@@ -33,7 +33,7 @@ namespace db
     {
         std::string date = getTimeNow();
         auto path = db::getUserDateEndpoint(user, date);
-        system(("mkdir -p " + path.first).c_str());
+        system(("if not exist \"" + path.first + "\" mkdir " + path.first).c_str());
         FILE * db = fopen(path.first.append(path.second.append(".txt")).c_str(), "a");
         if(!db) return 1;
         fprintf(db, "%s\n", date.substr(11, 8).c_str());
@@ -47,14 +47,14 @@ namespace db
     JSON toJson(User *user)
     {
         JSON json;
-        auto months = io::readDir("db/" + user->tag);
+        auto months = io::readDir("db\\" + user->tag);
         for(auto month : months)
         {
             JSON jmonths;
-            auto days = io::readDir("db/" + user->tag + "/" + month);
+            auto days = io::readDir("db\\" + user->tag + "\\" + month);
             if(days.size() == 0)
             {
-                system(("rm -r db/" + user->tag + "/" + month + "/").c_str());
+                system(("rmdir db\\" + user->tag + "\\" + month + "\\").c_str());
             }
             for(auto day : days)
             {
@@ -101,7 +101,7 @@ namespace db
                 json.Write(day, array);
                 if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
                 {
-                    system(("rm db/" + user->tag + "/" + month + "/" + day + ".txt").c_str());
+                    system(("del db\\" + user->tag + "\\" + month + "\\" + day + ".txt").c_str());
                 }
             }
         }
