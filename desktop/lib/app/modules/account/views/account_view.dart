@@ -43,6 +43,14 @@ class AccountView extends GetView<AccountController> {
                         onPressed: controller.createUser.value,
                         child: const Text("Spasi"),
                       ),
+                      if (controller.result.isNotEmpty)
+                        Text(
+                          controller.result.value,
+                          style: const TextStyle(
+                            fontSize: 30,
+                            color: Colors.green,
+                          ),
+                        ),
                     ],
                   )
                 : Column(
