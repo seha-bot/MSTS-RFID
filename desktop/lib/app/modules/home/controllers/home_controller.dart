@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class User {
@@ -20,10 +21,11 @@ class User {
 }
 
 class HomeController extends GetxController {
+  ScrollController scroll = ScrollController();
   var search = "".obs;
+  var locked = false.obs;
 
   final root = "C:\\db";
-  bool locked = false;
   List<User> oldUsers = [];
   RxList<User> users = RxList<User>();
   Queue<User> red = Queue();
@@ -74,16 +76,19 @@ class HomeController extends GetxController {
     getUsers();
     oldUsers = List.from(users);
     Timer.periodic(const Duration(milliseconds: 100), (c) async {
-      if (locked) return;
+      if (locked.value) return;
       getUsers();
       findDiff();
       oldUsers = List.from(users);
-      locked = true;
+      locked.value = true;
       while (red.isNotEmpty) {
         print("${red.first}");
+        scroll.animateTo(0.0,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+        await Future.delayed(const Duration(seconds: 1, milliseconds: 500));
         red.removeFirst();
       }
-      locked = false;
+      locked.value = false;
     });
     super.onInit();
   }

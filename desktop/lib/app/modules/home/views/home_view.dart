@@ -13,58 +13,75 @@ class HomeView extends GetView<HomeController> {
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 700.0),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.all(20.0),
-                child: const SearchBox(),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  border: Border.all(width: 0.5, color: Colors.grey),
+          child: SingleChildScrollView(
+            controller: controller.scroll,
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.all(20.0),
+                  child: const SearchBox(),
                 ),
-                child: Obx(
-                  () => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (int i = 0; i < controller.users.length; i++) ...[
-                        Container(
-                          padding: const EdgeInsets.all(15.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "${i + 1}. ${controller.users[i].ime} ${controller.users[i].prezime}",
-                                ),
-                              ),
-                              Text(
-                                controller.users[i].isPresent
-                                    ? "Prisutan"
-                                    : "Odsutan",
-                                style: TextStyle(
-                                  color: controller.users[i].isPresent
-                                      ? Colors.green
-                                      : Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (i != controller.users.length - 1)
-                          const Divider(
-                            color: Colors.grey,
-                            thickness: 0.5,
-                            height: 0.0,
-                          ),
-                      ],
-                    ],
+                Obx(
+                  () => Visibility(
+                    visible: controller.locked.value,
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 20.0),
+                      child: Text(
+                        controller.red.isEmpty
+                            ? ""
+                            : "${controller.red.first.isPresent ? "Doviđenja" : "Dobrodošao"} ${controller.red.first}",
+                        style: const TextStyle(fontSize: 40),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(width: 0.5, color: Colors.grey),
+                  ),
+                  child: Obx(
+                    () => Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (int i = 0; i < controller.users.length; i++) ...[
+                          Container(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    "${i + 1}. ${controller.users[i].ime} ${controller.users[i].prezime}",
+                                  ),
+                                ),
+                                Text(
+                                  controller.users[i].isPresent
+                                      ? "Prisutan"
+                                      : "Odsutan",
+                                  style: TextStyle(
+                                    color: controller.users[i].isPresent
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (i != controller.users.length - 1)
+                            const Divider(
+                              color: Colors.grey,
+                              thickness: 0.5,
+                              height: 0.0,
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -86,7 +103,7 @@ class SearchBox extends GetView<HomeController> {
         cursorHeight: 20,
         decoration: InputDecoration(
           contentPadding: EdgeInsets.zero,
-          hintText: "Pretraživanje profesora",
+          hintText: "Pretraživanje",
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(
