@@ -26,6 +26,7 @@ DWORD WINAPI t_smjena(LPVOID lpParameter)
             {
                 if(USERS[i].isPresent) db::addUserRecord(&USERS[i]);
             }
+            db::recordUsers(USERS);
         }
         Sleep(60000);
     }

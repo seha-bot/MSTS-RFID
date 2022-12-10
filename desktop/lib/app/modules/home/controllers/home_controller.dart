@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:get/get.dart';
 
@@ -22,7 +24,10 @@ class HomeController extends GetxController {
   var fajl = "reading...".obs;
 
   final root = "C:\\db";
+  bool locked = false;
+  List<User> oldUsers = [];
   RxList<User> users = RxList<User>();
+  Queue<User> red = Queue();
 
   void getUsers() async {
     final f = File("$root\\USERS.json");
@@ -39,11 +44,35 @@ class HomeController extends GetxController {
     });
   }
 
+  void findDiff() {
+    for (var old in oldUsers) {
+      for (var novi in users) {
+        if (old.tag == novi.tag) {
+          if (old.isPresent != novi.isPresent) {
+            red.add(old);
+            return;
+          }
+          break;
+        }
+      }
+    }
+  }
+
   @override
   void onInit() {
     getUsers();
-    Timer.periodic(const Duration(milliseconds: 100), (c) {
+    oldUsers = List.from(users);
+    Timer.periodic(const Duration(milliseconds: 100), (c) async {
+      if (locked) return;
       getUsers();
+      findDiff();
+      oldUsers = List.from(users);
+      locked = true;
+      while (red.isNotEmpty) {
+        print("${red.first}");
+        red.removeFirst();
+      }
+      locked = false;
     });
     super.onInit();
   }
