@@ -28,10 +28,15 @@ public:
     }
 };
 
+
+#include<api.h>
+
 std::vector<User> getUsers()
 {
     JSON json;
-    json = json.TranslateJSON(io::getSiteData(BASE_URL + USERS_ENDPOINT));
+    std::string buffer = io::getSiteData(BASE_URL + USERS_ENDPOINT);
+    if(buffer.empty()) buffer = truncateJSON(io::readFile(db::basePath + "USERS.json"));
+    json = json.TranslateJSON(buffer);
     std::vector<JSON> list = json.GetAllO();
     std::vector<std::string> keys = json.getKeys();
 
@@ -40,6 +45,7 @@ std::vector<User> getUsers()
     {
         USERS.push_back(User(keys[i], list[i].GetS("ime"), list[i].GetS("prezime"), list[i].GetB("is_present"), list[i].GetS("last_entry")));
     }
+
     return USERS;
 }
 
@@ -52,5 +58,3 @@ void updateUser(User *user)
     json.Write("last_entry", user->lastEntry);
     io::setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
 }
-
-#include<api.h>

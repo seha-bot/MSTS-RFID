@@ -32,6 +32,7 @@ namespace io
             // curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 200L);
 
             CURLcode curl_code = curl_easy_perform(curl);
             long http_code = 0;
@@ -57,6 +58,7 @@ namespace io
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 200L);
             CURLcode curl_code = curl_easy_perform(curl);
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);

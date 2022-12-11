@@ -39,7 +39,7 @@ DWORD WINAPI t_rebase(LPVOID lpParameter)
             db::userSync(&user);
             updateUser(&user);
         }
-        USERS = getUsers(); //TODO: fetch data from USERS.json if there is no internet
+        USERS = getUsers();
         db::recordUsers(USERS);
         user_lock = false;
         Sleep(5000);

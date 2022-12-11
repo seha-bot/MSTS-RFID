@@ -55,8 +55,10 @@ namespace db
             j_user.Write("ime", user.ime);
             j_user.Write("prezime", user.prezime);
             j_user.Write("is_present", user.isPresent);
+            j_user.Write("last_entry", user.lastEntry);
             json.Write(user.tag, j_user);
         }
+        if(json.GetAllO().empty()) return;
         FILE * fp = fopen((basePath + "USERS.json").c_str(), "w");
         if(!fp)
         {
