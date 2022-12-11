@@ -3,15 +3,6 @@
 #include<string.h>
 #include<serial.h>
 
-void usbWriteOK()
-{
-    // system("echo -ne \"1\" > /dev/ttyUSB0");
-}
-void usbWriteBAD()
-{
-    // system("echo -ne \"2\" > /dev/ttyUSB0");
-}
-
 std::vector<User> USERS;
 bool user_lock = false;
 
@@ -85,12 +76,12 @@ int main()
                         if(user.isPresent)
                         {
                             std::cout << "Dobrodosao " << user.ime << std::endl;
-                            usbWriteOK();
+                            serial::usbWriteOK();
                         }
                         else
                         {
                             std::cout << "Vidimo se " << user.ime << std::endl;
-                            usbWriteOK();
+                            serial::usbWriteOK();
                         }
                     }
                     else match = false;
@@ -107,7 +98,7 @@ int main()
             FILE * fp = fopen((db::basePath + "NEW").c_str(), "w");
             if(fp) fprintf(fp, "%s\n", usb.c_str());
             fclose(fp);
-            usbWriteBAD();
+            serial::usbWriteBAD();
         }
     }
     return 0;

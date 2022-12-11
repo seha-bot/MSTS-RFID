@@ -12,10 +12,10 @@ namespace serial
 
         DCB dcbSerialParam = {0};
         GetCommState(hComm, &dcbSerialParam);
-        dcbSerialParam.BaudRate=CBR_115200;
-        dcbSerialParam.ByteSize=8;
-        dcbSerialParam.StopBits=ONESTOPBIT;
-        dcbSerialParam.Parity=NOPARITY;
+        dcbSerialParam.BaudRate = CBR_115200;
+        dcbSerialParam.ByteSize = 8;
+        dcbSerialParam.StopBits = ONESTOPBIT;
+        dcbSerialParam.Parity = NOPARITY;
         dcbSerialParam.fDtrControl = DTR_CONTROL_ENABLE;
         SetCommState(hComm, &dcbSerialParam);
     }
@@ -32,5 +32,21 @@ namespace serial
             s += c[0];
         }
         return s;
+    }
+
+    void writeStatus(const char *data_sent)
+    {
+        DWORD word;
+        unsigned int data_sent_length = strlen(data_sent);
+        WriteFile(hComm, (void*)data_sent, data_sent_length, &word, NULL);
+    }
+    
+    void usbWriteOK()
+    {
+        serial::writeStatus("1");
+    }
+    void usbWriteBAD()
+    {
+        serial::writeStatus("2");
     }
 }
