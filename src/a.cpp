@@ -13,6 +13,7 @@ void usbWriteBAD()
 }
 
 std::vector<User> USERS;
+bool user_lock = false;
 
 DWORD WINAPI t_smjena(LPVOID lpParameter)
 {
@@ -22,11 +23,14 @@ DWORD WINAPI t_smjena(LPVOID lpParameter)
         auto tm = *localtime(&tt);
         if(tm.tm_hour == 19 && tm.tm_min >= 30)
         {
+            if(user_lock) continue;
+            user_lock = true;
             for(int i = 0; i < USERS.size(); i++)
             {
                 if(USERS[i].isPresent) db::addUserRecord(&USERS[i]);
             }
             db::recordUsers(USERS);
+            user_lock = false;
         }
         Sleep(60000);
     }
@@ -37,11 +41,16 @@ DWORD WINAPI t_rebase(LPVOID lpParameter)
 {
     while(1)
     {
+        if(user_lock) continue;
+        user_lock = true;
         for(auto user : USERS)
         {
             db::userSync(&user);
             updateUser(&user);
         }
+        USERS = getUsers(); //TODO: fetch data from USERS.json if there is no internet
+        db::recordUsers(USERS);
+        user_lock = false;
         Sleep(5000);
     }
     return 0;
@@ -53,9 +62,6 @@ int main()
     CreateThread(0, 0, t_smjena, 0, 0, 0);
     CreateThread(0, 0, t_rebase, 0, 0, 0);
 
-    USERS = getUsers();
-    db::recordUsers(USERS);
-
     serial::openPort("COM5");
     std::string badRead = getTimeNow();
     while(1)
@@ -64,6 +70,8 @@ int main()
         if(usb.empty()) continue;
 
         bool match = false;
+        if(user_lock) continue;
+        user_lock = true;
         for(auto& user : USERS)
         {
             if(usb.compare(user.tag) == 0)
@@ -90,6 +98,7 @@ int main()
                 break;
             }
         }
+        user_lock = false;
         if(!match && getTimeDiff(badRead) > 1)
         {
             badRead = getTimeNow();

@@ -56,7 +56,7 @@ class AccountController extends GetxController {
           "prezime": user.prezime,
         },
       );
-      result.value = "Korisnik uspjesno upisan";
+      result.value = "Korisnik uspješno upisan.";
     } catch (e) {
       log("$e");
       result.value = "";
