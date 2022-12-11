@@ -7,7 +7,6 @@ import 'package:desktop/app/interface/constants.dart';
 import 'package:desktop/app/interface/models.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/request/request.dart';
 
 class AccountController extends GetxController {
   var correct = "123456";
@@ -54,6 +53,7 @@ class AccountController extends GetxController {
         {
           "ime": user.ime,
           "prezime": user.prezime,
+          "password": "${user.ime}${user.prezime}420",
         },
       );
       result.value = "Korisnik uspješno upisan.";
