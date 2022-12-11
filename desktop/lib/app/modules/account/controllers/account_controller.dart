@@ -21,8 +21,8 @@ class AccountController extends GetxController {
   var tag = "".obs;
 
   void readTag() {
-    final ft = File("${AppConstants.root}\\NEW");
-    final fu = File("${AppConstants.root}\\USERS.json");
+    final ft = File("${AppConstants.root}NEW");
+    final fu = File("${AppConstants.root}USERS.json");
     Map<String, dynamic> json = jsonDecode(fu.readAsStringSync());
 
     try {

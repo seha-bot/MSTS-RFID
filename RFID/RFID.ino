@@ -9,6 +9,7 @@ MFRC522 mfrc522(10,9);
 void setup() {
   Serial.begin(115200);
   pinMode(BUZZER, OUTPUT);
+  digitalWrite(BUZZER, HIGH);
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
   SPI.begin();
@@ -35,10 +36,10 @@ char toHex(byte v)
 
 void statusOK()
 {
-  digitalWrite(BUZZER, HIGH);
+  digitalWrite(BUZZER, LOW);
   digitalWrite(GREEN, HIGH);
   delay(100);
-  digitalWrite(BUZZER, LOW);
+  digitalWrite(BUZZER, HIGH);
   digitalWrite(GREEN, LOW);
   delay(100);
 }
@@ -47,10 +48,10 @@ void statusBAD()
 {
   for(int i = 0; i < 3; i++)
   {
-    digitalWrite(BUZZER, HIGH);
+    digitalWrite(BUZZER, LOW);
     digitalWrite(RED, HIGH);
     delay(50);
-    digitalWrite(BUZZER, LOW);
+    digitalWrite(BUZZER, HIGH);
     digitalWrite(RED, LOW);
     delay(50);
   }

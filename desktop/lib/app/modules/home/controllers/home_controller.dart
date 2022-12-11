@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 class HomeController extends GetxController {
   ScrollController scroll = ScrollController();
   var search = "".obs;
+  var texts = <TextSpan>[].obs;
   var locked = false.obs;
 
   List<User> oldUsers = [];
@@ -18,7 +19,7 @@ class HomeController extends GetxController {
   Queue<User> red = Queue();
 
   void getUsers() {
-    final f = File("${AppConstants.root}\\USERS.json");
+    final f = File("${AppConstants.root}USERS.json");
     Map<String, dynamic> json = jsonDecode(f.readAsStringSync());
     users.clear();
     json.forEach((key, value) {

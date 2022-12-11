@@ -63,9 +63,11 @@ class HomeView extends GetView<HomeController> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
-                                    child: Text(
-                                      "${i + 1}. ${controller.users[i].ime} ${controller.users[i].prezime}",
+                                    child: Text.rich(
+                                      TextSpan(children: controller.texts),
                                     ),
+
+                                    // "${i + 1}. ${controller.users[i].ime} ${controller.users[i].prezime}",
                                   ),
                                   Text(
                                     controller.users[i].isPresent
