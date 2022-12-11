@@ -18,7 +18,11 @@ DWORD WINAPI t_smjena(LPVOID lpParameter)
             user_lock = true;
             for(int i = 0; i < USERS.size(); i++)
             {
-                if(USERS[i].isPresent) db::addUserRecord(&USERS[i]);
+                if(USERS[i].isPresent)
+                {
+                    std::cout << "Logging out " << USERS[i].ime << std::endl;
+                    db::addUserRecord(&USERS[i]);
+                }
             }
             db::recordUsers(USERS);
             user_lock = false;

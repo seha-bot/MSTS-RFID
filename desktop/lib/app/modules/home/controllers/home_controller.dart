@@ -11,17 +11,43 @@ import 'package:get/get.dart';
 class HomeController extends GetxController {
   ScrollController scroll = ScrollController();
   var search = "".obs;
-  var texts = <TextSpan>[].obs;
+  var texts = <Text>[].obs;
   var locked = false.obs;
 
   List<User> oldUsers = [];
   RxList<User> users = RxList<User>();
   Queue<User> red = Queue();
 
+  List<TextSpan> generateSpan(String kveri, String origin) {
+    List<String> svi = kveri.split(" ");
+    for (String jedan in svi) {
+      origin = origin.replaceAll(RegExp(jedan), "|$jedan|");
+    }
+    bool open = false;
+
+    List<TextSpan> spans = [];
+    for (int i = 0; i < origin.length; i++) {
+      if (origin[i] != '|') {
+        spans.add(
+          TextSpan(
+            text: origin[i],
+            style: TextStyle(
+              fontWeight: open ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        );
+      } else {
+        open = !open;
+      }
+    }
+    return spans;
+  }
+
   void getUsers() {
     final f = File("${AppConstants.root}USERS.json");
     Map<String, dynamic> json = jsonDecode(f.readAsStringSync());
     users.clear();
+    texts.clear();
     json.forEach((key, value) {
       if (value["ime"] == "uprava") return;
       String kveri = search.value.toLowerCase().trim();
@@ -32,15 +58,33 @@ class HomeController extends GetxController {
           any = true;
         }
       });
-      if (kveri == "prisutan" && value["is_present"] ||
-          kveri == "odsutan" && !value["is_present"] ||
-          any) {
+      bool prod = kveri == "prisutan" && value["is_present"] ||
+          kveri == "odsutan" && !value["is_present"];
+      if (prod) kveri = "";
+      if (prod || any) {
         users.add(User(
           key,
           value["ime"],
           value["prezime"],
           value["is_present"],
         ));
+
+        texts.add(
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: "${users.length}. "),
+                TextSpan(
+                    children:
+                        generateSpan(search.value.trim(), users.last.ime)),
+                const TextSpan(text: " "),
+                TextSpan(
+                    children:
+                        generateSpan(search.value.trim(), users.last.prezime)),
+              ],
+            ),
+          ),
+        );
       }
     });
   }
