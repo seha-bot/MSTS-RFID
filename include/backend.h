@@ -46,15 +46,6 @@ std::vector<User> getUsers()
         USERS.push_back(User(keys[i], list[i].GetS("ime"), list[i].GetS("prezime"), list[i].GetB("is_present"), list[i].GetS("last_entry")));
     }
 
+    if(USERS.empty()) std::cout << "Error: PROBLEM GETTING USERS" << std::endl;
     return USERS;
-}
-
-void updateUser(User *user)
-{
-    JSON json;
-    json.Write("ime", user->ime);
-    json.Write("prezime", user->prezime);
-    json.Write("is_present", user->isPresent);
-    json.Write("last_entry", user->lastEntry);
-    io::setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
 }

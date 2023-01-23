@@ -1,14 +1,17 @@
 #include<iostream>
+#include<string>
+#include<vector>
 
 namespace db
 {
-    const std::string basePath = "C:\\db\\";
+    const std::string basePath = "/home/arduino/git/MSTS-RFID/db/";
+    const std::string dirHeader = "/";
 
     std::pair<std::string, std::string> getUserDateEndpoint(User *user, std::string date)
     {
         std::string dMonth = date.substr(0, 7);
         std::string dDay = date.substr(8, 2);
-        return std::make_pair(basePath + user->tag + "\\" + dMonth + "\\", dDay);
+        return std::make_pair(basePath + user->tag + dirHeader + dMonth + dirHeader, dDay);
     }
 
     std::vector<std::string> getUserRecords(User *user, std::string date)
@@ -35,11 +38,13 @@ namespace db
     {
         std::string date = getTimeNow();
         auto path = db::getUserDateEndpoint(user, date);
-        system(("if not exist \"" + path.first + "\" mkdir " + path.first).c_str());
-        FILE * db = fopen(path.first.append(path.second.append(".txt")).c_str(), "a");
-        if(!db) return 1;
-        fprintf(db, "%s\n", date.substr(11, 8).c_str());
-        fclose(db);
+        io::mkdir(path.first);
+
+        if(io::appendFile(path.first.append(path.second.append(".txt")), date.substr(11, 8)))
+        {
+            std::cout << "Error: failed writing new record to file." << std::endl;
+            return 1;
+        }
 
         user->lastEntry = date;
         user->isPresent = !user->isPresent;
@@ -59,14 +64,11 @@ namespace db
             json.Write(user.tag, j_user);
         }
         if(json.GetAllO().empty()) return;
-        FILE * fp = fopen((basePath + "USERS.json").c_str(), "w");
-        if(!fp)
+        if(io::writeFile(basePath + "USERS.json", json.GenerateJSON()))
         {
             std::cout << "ERROR: can't write users." << std::endl;
             return;
         }
-        fprintf(fp, "%s\n", (json.GenerateJSON()).c_str());
-        fclose(fp);
     }
 
     JSON toJson(User *user)
@@ -76,10 +78,10 @@ namespace db
         for(auto month : months)
         {
             JSON jmonths;
-            auto days = io::readDir(basePath + user->tag + "\\" + month);
+            auto days = io::readDir(basePath + user->tag + dirHeader + month);
             if(days.size() == 0)
             {
-                system(("rmdir " + basePath + user->tag + "\\" + month + "\\").c_str());
+                io::rmdir(basePath + user->tag + dirHeader + month + dirHeader);
             }
             for(auto day : days)
             {
@@ -94,8 +96,9 @@ namespace db
         return json;
     }
 
-    void userSync(User *user)
+    int userSync(User *user)
     {
+        int status = 1;
         JSON local = db::toJson(user);
         auto months = local.GetAllO();
         for(int m = 0; m < months.size(); m++)
@@ -110,7 +113,7 @@ namespace db
                 std::string day = dkeys[d];
 
                 std::string data = io::getSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month + "/" + day);
-                if(data.size() == 0) continue;
+                if(data.empty()) continue;
                 std::vector<std::string> records;
                 if(data != "null")
                 {
@@ -126,9 +129,12 @@ namespace db
                 json.Write(day, array);
                 if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
                 {
-                    system(("del " + basePath + user->tag + "\\" + month + "\\" + day + ".txt").c_str());
+                    io::rmfile(basePath + user->tag + dirHeader + month + dirHeader + day + ".txt");
+                    status = 0;
                 }
+                else status = 1;
             }
         }
+        return status;
     }
 }

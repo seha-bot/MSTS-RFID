@@ -2,11 +2,13 @@
 #include<backend.h>
 #include<string.h>
 #include<serial.h>
+#include<pthread.h>
 
 std::vector<User> USERS;
 bool user_lock = false;
+bool has_wifi = false;
 
-DWORD WINAPI t_smjena(LPVOID lpParameter)
+void* t_smjena(void*)
 {
     while(1)
     {
@@ -16,52 +18,38 @@ DWORD WINAPI t_smjena(LPVOID lpParameter)
         {
             if(user_lock) continue;
             user_lock = true;
-            for(int i = 0; i < USERS.size(); i++)
+            for(auto& user : USERS)
             {
-                if(USERS[i].isPresent)
+                if(user.isPresent)
                 {
-                    std::cout << "Logging out " << USERS[i].ime << std::endl;
-                    db::addUserRecord(&USERS[i]);
+                    std::cout << "Logging out " << user.ime << std::endl;
+                    db::addUserRecord(&user);
                 }
+                db::userSync(&user);
             }
             db::recordUsers(USERS);
             user_lock = false;
         }
-        Sleep(60000);
+        sleep(60);
     }
-    return 0;
-}
-
-DWORD WINAPI t_rebase(LPVOID lpParameter)
-{
-    while(1)
-    {
-        if(user_lock) continue;
-        user_lock = true;
-        for(auto user : USERS)
-        {
-            db::userSync(&user);
-            updateUser(&user);
-        }
-        USERS = getUsers();
-        db::recordUsers(USERS);
-        user_lock = false;
-        Sleep(5000);
-    }
-    return 0;
+    return nullptr;
 }
 
 int main()
 {
-    DWORD thread_id;
-    CreateThread(0, 0, t_smjena, 0, 0, 0);
-    CreateThread(0, 0, t_rebase, 0, 0, 0);
+    USERS = getUsers();
+    if(USERS.empty()) return 0;
+    db::recordUsers(USERS);
 
-    serial::openPort("COM5");
+    if(serial::openPort("/dev/ttyUSB0"))
+    {
+        std::cout << "USB OPEN ERROR" << std::endl;
+        return 0;
+    }
     std::string badRead = getTimeNow();
     while(1)
     {
-        std::string usb = serial::readTag();
+        std::string usb = truncateJSON(serial::readTag());
         if(usb.empty()) continue;
 
         bool match = false;
@@ -77,6 +65,17 @@ int main()
                     if(db::addUserRecord(&user) == 0)
                     {
                         db::recordUsers(USERS);
+
+                        bool newStatus = db::userSync(&user) == 0;
+                        if(!has_wifi && newStatus)
+                        {
+                            for(int i = 0; i < USERS.size(); i++)
+                            {
+                                if(USERS[i].tag != user.tag) db::userSync(&USERS[i]);
+                            }
+                        }
+                        has_wifi = newStatus;
+
                         if(user.isPresent)
                         {
                             std::cout << "Dobrodosao " << user.ime << std::endl;
@@ -93,17 +92,15 @@ int main()
                 break;
             }
         }
-        user_lock = false;
         if(!match && getTimeDiff(badRead) > 1)
         {
             badRead = getTimeNow();
-            std::cout << "TAG DID NOT MATCH" << std::endl;
-            //TODO: too much file write repetition code. Can be refactored.
-            FILE * fp = fopen((db::basePath + "NEW").c_str(), "w");
-            if(fp) fprintf(fp, "%s\n", usb.c_str());
-            fclose(fp);
+            std::cout << "TAG DID NOT MATCH " << usb << std::endl;
+            io::writeFile(db::basePath + "NEW", usb);
             serial::usbWriteBAD();
+            USERS = getUsers();
         }
+        user_lock = false;
     }
     return 0;
 }
