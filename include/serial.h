@@ -1,10 +1,14 @@
 #include<iostream>
 #include<unistd.h>
 
+//Ovo je namespace za komunikaciju sa arduinom
+//Ako zelite ovo portati na windows, samo prekopirajte kod sa windows brancha
+
 namespace serial
 {
     FILE* arduino;
 
+    //Na windowsu ce biti neki COM port, a na linuxu skontajte sami
     int openPort(std::string port)
     {
         arduino = fopen(port.c_str(), "rw");
@@ -12,6 +16,7 @@ namespace serial
         return 0;
     }
 
+    //Procita trenutni buffer sa serial porta i vrati kao string
     std::string readTag()
     {
         std::string s = "";

@@ -5,6 +5,16 @@
 #include<dirent.h>
 #include<string.h>
 
+//Ovo je namespace koji grupiše sve funkcije za komunikaciju sa fajlovima iz firebase-a i lokalnog storage-a
+//Ovdje ce se morati mijenjati kod ako se bude portalo na windows
+//Trenutno postoji windows branch na gitu, na njemu je sve vec portano, ali je stara verzija aplikacije
+//Stvari koje trebate paziti tijekom portanja:
+/*
+    * Morate buildati curl biblioteku, ili uzeti onu iz windows brancha
+    * Morate promijeniti mkdir, rmdir i rmfile funkcije u odgovarajuce za windows
+        * Postoje na windows branchu, ali nisu na istom mjestu. Samo pretrazite sva mjesta gdje se nalazi "system()" funkcija i skontajte gje šta ide
+*/
+
 namespace io
 {
     size_t write_get(void *contents, size_t size, size_t nmemb, void *userp)
@@ -18,6 +28,8 @@ namespace io
     }
 
     CURL *curl;
+    //Ovo je auth token od realtime database-a
+    //Ovo je također najgori nacin zastite, ali ne vjerujem da ce neko iz nase skole probati to probiti
     const char* auth = ".json?auth=VH0KFbDUHbBlceeXYuxtktsloiaQnp69FKQjnbAO";
 
     std::string getSiteData(std::string site)

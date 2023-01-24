@@ -1,6 +1,9 @@
 #include<string>
 #include<time.h>
 
+//Ovdje su funkcije vezane za vrijeme
+
+//Ova funkcija vraca trenutni datum i vrijeme u ovom formatu:
 //format YYYY-MM-DD.HH:mm:ss
 const std::string getTimeNow() {
     time_t     now = time(0);
@@ -11,6 +14,8 @@ const std::string getTimeNow() {
     return buf;
 }
 
+
+//Ova funkcija pretvara string (iz istog formata) u time_t
 time_t atot(std::string strtime)
 {
     time_t now = time(0);
@@ -30,6 +35,7 @@ time_t atot(std::string strtime)
     return mktime(&tstruct);
 }
 
+//Ova funkcija vraca razliku između oldTime i trenutnog vremena u sekundama
 int getTimeDiff(std::string oldTime)
 {
     return atot(getTimeNow()) - atot(oldTime);

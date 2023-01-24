@@ -2,11 +2,17 @@
 #include<string>
 #include<vector>
 
+//Sve funkcije rade operacije na lokalne fajlove unutar basePath
+//Jedine funkcije koje komuniciraju sa bazom su userSync i getUsers
+//One nece crashati app ako ne uspiju izvrsiti
+
 namespace db
 {
+    //Ovo se treba promijeniti ako se pokrece na windows
     const std::string basePath = "/db/";
     const std::string dirHeader = "/";
 
+    //Ovo generiše path za spremanje na bazu i lokalno na osnovu date-a
     std::pair<std::string, std::string> getUserDateEndpoint(User *user, std::string date)
     {
         std::string dMonth = date.substr(0, 7);
@@ -14,6 +20,7 @@ namespace db
         return std::make_pair(basePath + user->tag + dirHeader + dMonth + dirHeader, dDay);
     }
 
+    //Ovo vrati sve lokalne upise za neki dan
     std::vector<std::string> getUserRecords(User *user, std::string date)
     {
         auto path = db::getUserDateEndpoint(user, date);
@@ -34,6 +41,8 @@ namespace db
         return records;
     }
 
+    //Ova funkcija lokalno spremi novi upis i promijeni status prisutnosti usera
+    //Spremljeni upis je trenutno vrijeme
     int addUserRecord(User *user)
     {
         std::string date = getTimeNow();
@@ -51,6 +60,7 @@ namespace db
         return 0;
     }
 
+    //Ova funkcija spremi sve usere i njihove podatke lokalno u bazu
     void recordUsers(std::vector<User> USERS)
     {
         JSON json;
@@ -71,6 +81,11 @@ namespace db
         }
     }
 
+    //Ova funkcija sluzi za generisanje JSON dokumenta od nekog usera
+    //Podaci koji su spremljeni u lokalnu bazu se konvertuju
+    //Vratit ce samo datume kada je koji user usao i izasao
+    //Koristi isti format kao i firebase baza
+    //Prazni folderi se obrisu
     JSON toJson(User *user)
     {
         JSON json;
@@ -96,6 +111,10 @@ namespace db
         return json;
     }
 
+    //Ova funkcija ce sve lokalno spremljene dokumente od nekog usera poslati u bazu
+    //Nece obrisati spremljene podatke iz baze, vec ce ih prvo procitati i onda nadodati na njih
+    //To je loša metoda jer zahtjeva 2 upita, ali od koga je dobro je :)
+    //Ako uspije, obrisat ce lokalne zapise
     int userSync(User *user)
     {
         int status = 1;
@@ -136,5 +155,26 @@ namespace db
             }
         }
         return status;
+    }
+
+    //Ova funkcija prvo proba procitati usere sa firebase
+    //Ako to ne uspije, citat ce iz lokalne baze
+    std::vector<User> getUsers()
+    {
+        JSON json;
+        std::string buffer = io::getSiteData(BASE_URL + USERS_ENDPOINT);
+        if(buffer.empty()) buffer = truncateJSON(io::readFile(db::basePath + "USERS.json"));
+        json = json.TranslateJSON(buffer);
+        std::vector<JSON> list = json.GetAllO();
+        std::vector<std::string> keys = json.getKeys();
+
+        std::vector<User> USERS;
+        for(int i = 0; i < list.size(); i++)
+        {
+            USERS.push_back(User(keys[i], list[i].GetS("ime"), list[i].GetS("prezime"), list[i].GetB("is_present"), list[i].GetS("last_entry")));
+        }
+
+        if(USERS.empty()) std::cout << "Error: PROBLEM GETTING USERS" << std::endl;
+        return USERS;
     }
 }

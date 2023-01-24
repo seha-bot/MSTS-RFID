@@ -30,22 +30,3 @@ public:
 
 
 #include<api.h>
-
-std::vector<User> getUsers()
-{
-    JSON json;
-    std::string buffer = io::getSiteData(BASE_URL + USERS_ENDPOINT);
-    if(buffer.empty()) buffer = truncateJSON(io::readFile(db::basePath + "USERS.json"));
-    json = json.TranslateJSON(buffer);
-    std::vector<JSON> list = json.GetAllO();
-    std::vector<std::string> keys = json.getKeys();
-
-    std::vector<User> USERS;
-    for(int i = 0; i < list.size(); i++)
-    {
-        USERS.push_back(User(keys[i], list[i].GetS("ime"), list[i].GetS("prezime"), list[i].GetB("is_present"), list[i].GetS("last_entry")));
-    }
-
-    if(USERS.empty()) std::cout << "Error: PROBLEM GETTING USERS" << std::endl;
-    return USERS;
-}
