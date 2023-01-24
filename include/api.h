@@ -4,7 +4,7 @@
 
 namespace db
 {
-    const std::string basePath = "/home/arduino/git/MSTS-RFID/db/";
+    const std::string basePath = "/db/";
     const std::string dirHeader = "/";
 
     std::pair<std::string, std::string> getUserDateEndpoint(User *user, std::string date)

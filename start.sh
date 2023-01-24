@@ -7,6 +7,6 @@ then
     if [ $2 = "--run" ]
     then
         screen /dev/ttyUSB0 115200
-        ./out/$FILE
+        sudo ./out/$FILE
     fi
 fi

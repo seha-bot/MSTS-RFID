@@ -18,19 +18,21 @@ class HomeController extends GetxController {
   RxList<User> users = RxList<User>();
   Queue<User> red = Queue();
 
-  List<TextSpan> generateSpan(String kveri, String origin) {
-    List<String> svi = kveri.split(" ");
+  List<TextSpan> generateSpan(String kveri, String text) {
+    List<String> svi = kveri.toLowerCase().split(" ");
+    String origin = text;
     for (String jedan in svi) {
-      origin = origin.replaceAll(RegExp(jedan), "|$jedan|");
+      origin = origin.toLowerCase().replaceAll(RegExp(jedan), "|$jedan|");
     }
     bool open = false;
 
     List<TextSpan> spans = [];
+    int offset = 0;
     for (int i = 0; i < origin.length; i++) {
       if (origin[i] != '|') {
         spans.add(
           TextSpan(
-            text: origin[i],
+            text: text[i - offset],
             style: TextStyle(
               fontWeight: open ? FontWeight.bold : FontWeight.normal,
             ),
@@ -38,6 +40,7 @@ class HomeController extends GetxController {
         );
       } else {
         open = !open;
+        offset++;
       }
     }
     return spans;
