@@ -6,7 +6,7 @@ if [ $# -eq 2 ]
 then
     if [ $2 = "--run" ]
     then
-        screen /dev/ttyUSB0 115200
+        screen /dev/ttyACM0 9600
         sudo ./out/$FILE
     fi
 fi
