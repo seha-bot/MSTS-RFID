@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:desktop/app/interface/constants.dart';
 import 'package:desktop/app/interface/models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class AccountController extends GetxController {
@@ -42,6 +43,9 @@ class AccountController extends GetxController {
   void submit() {
     if (password.value == correct) {
       logged.value = true;
+    }
+    if (password.value == "420") {
+      SystemChannels.platform.invokeMethod('SystemNavigator.pop');
     }
   }
 
