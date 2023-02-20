@@ -1,46 +1,47 @@
-#include <iostream>
-#include <unistd.h>
-
-// Ovo je namespace za komunikaciju sa arduinom
-// Ako zelite ovo portati na windows, samo prekopirajte kod sa windows brancha
+#include<iostream>
+#include<windows.h>
 
 namespace serial
 {
-    FILE *arduino;
-    std::string port;
+    HANDLE hComm;
 
-    // Na windowsu ce biti neki COM port, a na linuxu skontajte sami
-    int openPort(std::string _port)
+    int openPort(std::string port)
     {
-        port = _port;
-        arduino = fopen(port.c_str(), "rw");
-        if (arduino == 0)
-        {
-            return 1;
-        }
-        return 0;
+        hComm = CreateFileA(port.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        if(hComm == INVALID_HANDLE_VALUE) return 1;
+
+        DCB dcbSerialParam = {0};
+        GetCommState(hComm, &dcbSerialParam);
+        dcbSerialParam.BaudRate = CBR_9600;
+        dcbSerialParam.ByteSize = 8;
+        dcbSerialParam.StopBits = ONESTOPBIT;
+        dcbSerialParam.Parity = NOPARITY;
+        dcbSerialParam.fDtrControl = DTR_CONTROL_ENABLE;
+        SetCommState(hComm, &dcbSerialParam);
+	return 0;
     }
 
-    // Procita trenutni buffer sa serial porta i vrati kao string
     std::string readTag()
     {
+        DWORD word = 0;
         std::string s = "";
-        char c;
-        while (1)
+        char c[1];
+        while(1)
         {
-            c = fgetc(arduino);
-            if (c == '\n' || c == '\r' || c == '\0')
-                return s;
-            s += c;
+            ReadFile(hComm, c, 1, &word, 0);
+            if(c[0] == '\n' || c[0] == '\r' || c[0] == '\0') return s;
+            s += c[0];
         }
         return s;
     }
 
-    void writeStatus(std::string data_sent)
+    void writeStatus(const char *data_sent)
     {
-        system(("echo '" + data_sent + "' >> " + port).c_str());
+        DWORD word;
+        unsigned int data_sent_length = strlen(data_sent);
+        WriteFile(hComm, (void*)data_sent, data_sent_length, &word, NULL);
     }
-
+    
     void usbWriteOK()
     {
         serial::writeStatus("1");

@@ -2,7 +2,6 @@
 #include <backend.h>
 #include <string.h>
 #include <serial.h>
-#include <pthread.h>
 
 std::vector<User> USERS;
 
@@ -17,33 +16,33 @@ bool has_wifi = false;
 // Ova funkcija se izvrsava na posebnom thread-u
 // Sluzi za odjavljivanje usera nakon pola 8
 // To je u slucaju da se neko zaboravi odjaviti
-void *t_smjena(void *)
-{
-    while (1)
-    {
-        time_t tt = atot(getTimeNow());
-        auto tm = *localtime(&tt);
-        if (tm.tm_hour == 19 && tm.tm_min >= 30)
-        {
-            if (user_lock)
-                continue;
-            user_lock = true;
-            for (auto &user : USERS)
-            {
-                if (user.isPresent)
-                {
-                    std::cout << "Logging out " << user.ime << std::endl;
-                    db::addUserRecord(&user);
-                }
-                db::userSync(&user);
-            }
-            db::recordUsers(USERS);
-            user_lock = false;
-        }
-        sleep(60);
-    }
-    return nullptr;
-}
+//void *t_smjena(void *)
+//{
+//    while (1)
+//    {
+//        time_t tt = atot(getTimeNow());
+//        auto tm = *localtime(&tt);
+//        if (tm.tm_hour == 19 && tm.tm_min >= 30)
+//        {
+//            if (user_lock)
+//                continue;
+//            user_lock = true;
+//            for (auto &user : USERS)
+//            {
+//                if (user.isPresent)
+//                {
+//                    std::cout << "Logging out " << user.ime << std::endl;
+//                    db::addUserRecord(&user);
+//                }
+//                db::userSync(&user);
+//            }
+//            db::recordUsers(USERS);
+//            user_lock = false;
+//        }
+//        sleep(60);
+//    }
+//    return nullptr;
+//}
 
 int main()
 {
@@ -53,8 +52,10 @@ int main()
         return 0;
     db::recordUsers(USERS);
 
+    for(auto user : USERS) std::cout << user.ime << std::endl;
+
     // Otvaranje usb porta za komunikaciju sa arduinom
-    if (serial::openPort("/dev/ttyACM0"))
+    if (serial::openPort("COM3"))
     {
         std::cout << "USB OPEN ERROR" << std::endl;
         return 0;

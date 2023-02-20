@@ -1,4 +1,4 @@
-#include<iostream>
+﻿#include<iostream>
 #include<string>
 #include<vector>
 #include<curl/curl.h>
@@ -131,16 +131,16 @@ namespace io
 
     void mkdir(std::string directory)
     {
-        system(("mkdir -p " + directory).c_str());
+        system(("if not exist \"" + directory + "\" mkdir " + directory).c_str());
     }
 
     void rmdir(std::string directory)
     {
-        system(("rm -rf " + directory).c_str());
+        system(("rmdir " + directory).c_str());
     }
 
     void rmfile(std::string file)
     {
-        system(("rm -f " + file).c_str());
+        system(("del " + file).c_str());
     }
 }

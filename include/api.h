@@ -1,4 +1,4 @@
-#include<iostream>
+﻿#include<iostream>
 #include<string>
 #include<vector>
 
@@ -9,8 +9,8 @@
 namespace db
 {
     //Ovo se treba promijeniti ako se pokrece na windows
-    const std::string basePath = "/db/";
-    const std::string dirHeader = "/";
+    const std::string basePath = "C:\\db\\";
+    const std::string dirHeader = "\\";
 
     //Ovo generiše path za spremanje na bazu i lokalno na osnovu date-a
     std::pair<std::string, std::string> getUserDateEndpoint(User *user, std::string date)
