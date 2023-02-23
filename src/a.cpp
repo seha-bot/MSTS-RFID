@@ -52,8 +52,6 @@ int main()
         return 0;
     db::recordUsers(USERS);
 
-    for(auto user : USERS) std::cout << user.ime << std::endl;
-
     // Otvaranje usb porta za komunikaciju sa arduinom
     if (serial::openPort("COM3"))
     {
