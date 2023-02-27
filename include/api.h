@@ -111,6 +111,15 @@ namespace db
         return json;
     }
 
+    void userRecordStatus(User *user)
+    {
+        JSON json;
+        json.Write("is_present", user->isPresent);
+        json.Write("last_entry", user->lastEntry);
+        io::setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
+    }
+
+
     //Ova funkcija ce sve lokalno spremljene dokumente od nekog usera poslati u bazu
     //Nece obrisati spremljene podatke iz baze, vec ce ih prvo procitati i onda nadodati na njih
     //To je loša metoda jer zahtjeva 2 upita, ali od koga je dobro je :)
@@ -146,6 +155,7 @@ namespace db
                 JSON json; JSON array(JSON_ARRAY);
                 for(auto record : records) array.Write(record);
                 json.Write(day, array);
+		userRecordStatus(user);
                 if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
                 {
                     io::rmfile(basePath + user->tag + dirHeader + month + dirHeader + day + ".txt");

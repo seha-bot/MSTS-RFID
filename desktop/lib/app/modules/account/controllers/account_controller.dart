@@ -58,6 +58,7 @@ class AccountController extends GetxController {
           "ime": user.ime,
           "prezime": user.prezime,
           "password": "${user.ime}${user.prezime}420",
+	  "is_present": false,
         },
       );
       result.value = "Korisnik uspješno upisan.";
