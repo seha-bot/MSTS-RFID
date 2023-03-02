@@ -35,6 +35,8 @@ class HomeController extends GetxController {
             text: text[i - offset],
             style: TextStyle(
               fontWeight: open ? FontWeight.bold : FontWeight.normal,
+	      fontSize: 24,
+	      height: 1.25,
             ),
           ),
         );
@@ -47,49 +49,62 @@ class HomeController extends GetxController {
   }
 
   void getUsers() {
-    final f = File("${AppConstants.root}USERS.json");
-    Map<String, dynamic> json = jsonDecode(f.readAsStringSync());
-    users.clear();
-    texts.clear();
-    json.forEach((key, value) {
-      if (value["ime"] == "uprava") return;
-      String kveri = search.value.toLowerCase().trim();
-      bool any = false;
-      kveri.split(" ").forEach((combination) {
-        if (value["ime"].toLowerCase().contains(combination) ||
-            value["prezime"].toLowerCase().contains(combination)) {
-          any = true;
+    try
+    {
+      final f = File("${AppConstants.root}USERS.json");
+      Map<String, dynamic> json = jsonDecode(f.readAsStringSync());
+      users.clear();
+      texts.clear();
+      json.forEach((key, value) {
+        if (value["ime"] == "uprava") return;
+        String kveri = search.value.toLowerCase().trim();
+        bool any = false;
+        kveri.split(" ").forEach((combination) {
+          if (value["ime"].toLowerCase().contains(combination) ||
+              value["prezime"].toLowerCase().contains(combination)) {
+            any = true;
+          }
+        });
+        bool prod = kveri == "prisutan" && value["is_present"] ||
+            kveri == "odsutan" && !value["is_present"];
+        if (prod) kveri = "";
+        if (prod || any) {
+          users.add(User(
+            key,
+            value["ime"],
+            value["prezime"],
+            value["is_present"],
+          ));
+
+          texts.add(
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+		    text: "${users.length}. ",
+                    style: TextStyle(
+		      color: Colors.grey,
+		      fontSize: 24,
+		      height: 1.25,
+		    ),
+		  ),
+                  TextSpan(
+                      children:
+                          generateSpan(search.value.trim(), users.last.ime)),
+                  const TextSpan(text: " "),
+                  TextSpan(
+                      children:
+                          generateSpan(search.value.trim(), users.last.prezime)),
+                ],
+              ),
+            ),
+          );
         }
       });
-      bool prod = kveri == "prisutan" && value["is_present"] ||
-          kveri == "odsutan" && !value["is_present"];
-      if (prod) kveri = "";
-      if (prod || any) {
-        users.add(User(
-          key,
-          value["ime"],
-          value["prezime"],
-          value["is_present"],
-        ));
-
-        texts.add(
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: "${users.length}. "),
-                TextSpan(
-                    children:
-                        generateSpan(search.value.trim(), users.last.ime)),
-                const TextSpan(text: " "),
-                TextSpan(
-                    children:
-                        generateSpan(search.value.trim(), users.last.prezime)),
-              ],
-            ),
-          ),
-        );
-      }
-    });
+    }
+    catch(e)
+    {
+    }
   }
 
   void findDiff() {

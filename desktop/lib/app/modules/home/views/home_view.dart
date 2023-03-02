@@ -62,11 +62,7 @@ class HomeView extends GetView<HomeController> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(child: controller.texts[i]
-                                      // child: Text(
-                                      //   "${i + 1}. ${controller.users[i].ime} ${controller.users[i].prezime}",
-                                      // ),
-                                      ),
+                                  Expanded(child: controller.texts[i]),
                                   Text(
                                     controller.users[i].isPresent
                                         ? "Prisutan"
@@ -75,6 +71,8 @@ class HomeView extends GetView<HomeController> {
                                       color: controller.users[i].isPresent
                                           ? Colors.green
                                           : Colors.red,
+				      fontSize: 24,
+	                              height: 1.25,
                                     ),
                                   ),
                                 ],

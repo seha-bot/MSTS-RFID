@@ -21,9 +21,24 @@ class AccountController extends GetxController {
   var tag = "".obs;
 
   void readTag() {
-    final ft = File("${AppConstants.root}NEW");
+    bool shouldBreak = false;
+    late File ft;
+    try
+    {
+      ft = File("${AppConstants.root}NEW");
+    }
+    catch(e) { shouldBreak = true; }
+
+    if(shouldBreak) return;
+
+    Map<String, dynamic> json = {};
+
+    try
+    {
     final fu = File("${AppConstants.root}USERS.json");
-    Map<String, dynamic> json = jsonDecode(fu.readAsStringSync());
+    json = jsonDecode(fu.readAsStringSync());
+    }
+    catch(e) {}
 
     try {
       tag.value = ft.readAsStringSync().trim();
