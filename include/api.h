@@ -1,6 +1,7 @@
 ﻿#include<iostream>
 #include<string>
 #include<vector>
+DWORD thread_id;
 
 //Sve funkcije rade operacije na lokalne fajlove unutar basePath
 //Jedine funkcije koje komuniciraju sa bazom su userSync i getUsers
@@ -119,14 +120,59 @@ namespace db
         io::setSiteData(BASE_URL + USERS_ENDPOINT + "/" + user->tag, truncateJSON(json.GenerateJSON()));
     }
 
+    struct SYNCPARAMS
+    {
+	User* user;
+	std::string month;
+	std::string day;
+	std::string* localRecords;
+	int size;
+    };
+
+    DWORD WINAPI t_sync(LPVOID lpParameter)
+    {
+	SYNCPARAMS* params = (SYNCPARAMS*)lpParameter;
+	auto user = params->user;
+	auto month = params->month;
+	auto day = params->day;
+	auto localRecords = params->localRecords;
+	auto size = params->size;
+        std::string data = io::getSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month + "/" + day);
+        if(data.empty())
+	{
+	    delete[] localRecords;
+	    delete params;
+	    return 0;
+	}
+        std::vector<std::string> records;
+        if(data != "null")
+        {
+            JSON json;
+            json = json.TranslateJSON(data);
+            records = json.GetAllO()[0].GetAllS();
+        }
+
+        records.insert(records.end(), localRecords, localRecords + size);
+        JSON json; JSON array(JSON_ARRAY);
+        for(auto record : records) array.Write(record);
+        json.Write(day, array);
+	userRecordStatus(user);
+        if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
+        {
+            io::rmfile(basePath + user->tag + dirHeader + month + dirHeader + day + ".txt");
+	    std::cout << "SYNC COMPLETE " << user->ime << std::endl;
+        }
+	delete[] localRecords;
+	delete params;
+	return 0;
+    }
 
     //Ova funkcija ce sve lokalno spremljene dokumente od nekog usera poslati u bazu
     //Nece obrisati spremljene podatke iz baze, vec ce ih prvo procitati i onda nadodati na njih
     //To je loša metoda jer zahtjeva 2 upita, ali od koga je dobro je :)
     //Ako uspije, obrisat ce lokalne zapise
-    int userSync(User *user)
+    void userSync(User *user)
     {
-        int status = 1;
         JSON local = db::toJson(user);
         auto months = local.GetAllO();
         for(int m = 0; m < months.size(); m++)
@@ -140,31 +186,18 @@ namespace db
                 auto dkeys = months[m].getKeys();
                 std::string day = dkeys[d];
 
-                std::string data = io::getSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month + "/" + day);
-                if(data.empty()) continue;
-                std::vector<std::string> records;
-                if(data != "null")
-                {
-                    JSON json;
-                    json = json.TranslateJSON(data);
-                    records = json.GetAllO()[0].GetAllS();
-                }
-
-                auto localRecords = days[d].GetAllS();
-                records.insert(records.end(), localRecords.begin(), localRecords.end());
-                JSON json; JSON array(JSON_ARRAY);
-                for(auto record : records) array.Write(record);
-                json.Write(day, array);
-		userRecordStatus(user);
-                if(io::setSiteData(BASE_URL + STIME_ENDPOINT + "/" + user->tag + "/" + month, truncateJSON(json.GenerateJSON())) == 0)
-                {
-                    io::rmfile(basePath + user->tag + dirHeader + month + dirHeader + day + ".txt");
-                    status = 0;
-                }
-                else status = 1;
+		SYNCPARAMS* params = new SYNCPARAMS;
+		params->user = user;
+		params->month = month;
+		params->day = day;
+                auto localRecordsVec = days[d].GetAllS();
+		params->size = localRecordsVec.size();
+		std::string* localRecords = new std::string[params->size];
+		for(int i = 0; i < params->size; i++) localRecords[i] = localRecordsVec[i];
+		params->localRecords = localRecords;
+		CreateThread(0, 0, t_sync, params, 0, &thread_id);
             }
         }
-        return status;
     }
 
     //Ova funkcija prvo proba procitati usere sa firebase

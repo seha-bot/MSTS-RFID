@@ -27,7 +27,6 @@ namespace io
         return size * nmemb;
     }
 
-    CURL *curl;
     //Ovo je auth token od realtime database-a
     //Ovo je također najgori nacin zastite, ali ne vjerujem da ce neko iz nase skole probati to probiti
     const char* auth = ".json?auth=VH0KFbDUHbBlceeXYuxtktsloiaQnp69FKQjnbAO";
@@ -35,7 +34,7 @@ namespace io
     std::string getSiteData(std::string site)
     {
         std::string buffer;
-        curl = curl_easy_init();
+        CURL* curl = curl_easy_init();
         if(curl)
         {
             curl_easy_setopt(curl, CURLOPT_URL, site.append(auth).c_str());
@@ -43,12 +42,13 @@ namespace io
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 200L);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000L);
 
             CURLcode curl_code = curl_easy_perform(curl);
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
             curl_easy_cleanup(curl);
+	    std::cout << "HTTP CODE " << http_code << std::endl;
             if(http_code == 200 && curl_code != CURLE_ABORTED_BY_CALLBACK)
             {
                 return buffer;
@@ -60,7 +60,7 @@ namespace io
 
     int setSiteData(std::string site, std::string data)
     {
-        curl = curl_easy_init();
+        CURL* curl = curl_easy_init();
         if(curl)
         {
             curl_easy_setopt(curl, CURLOPT_URL, site.append(auth).c_str());
@@ -69,7 +69,7 @@ namespace io
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-            curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 200L);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 1000L);
 
             CURLcode curl_code = curl_easy_perform(curl);
             long http_code = 0;

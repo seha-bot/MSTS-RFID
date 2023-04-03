@@ -9,10 +9,6 @@ std::vector<User> USERS;
 // Ako jedan thread upravlja sa listom, da drugi ne pokusava
 bool user_lock = false;
 
-// Has wifi sluzi za provjeru wifi-a
-// Ako nema wifi, pa ponovo dođe, onda sve usere synca sa bazom
-bool has_wifi = false;
-
 // Ova funkcija se izvrsava na posebnom thread-u
 // Sluzi za odjavljivanje usera nakon pola 8
 // To je u slucaju da se neko zaboravi odjaviti
@@ -46,8 +42,7 @@ DWORD WINAPI t_smjena(LPVOID lpParameter)
 int main()
 {
     // Pokretanje threadova
-    DWORD thread_id;
-    CreateThread(0, 0, t_smjena, 0, 0, 0);
+    CreateThread(0, 0, t_smjena, 0, 0, &thread_id);
 
     // Pocetni fetch za usere.
     USERS = db::getUsers();
@@ -85,16 +80,7 @@ int main()
                     {
                         db::recordUsers(USERS);
 
-                        // Provjeri da li se vratio wifi, i ako jest syncaj sve usere
-                        bool newStatus = db::userSync(&user) == 0;
-                        if(!has_wifi && newStatus)
-                        {
-                            for(int i = 0; i < USERS.size(); i++)
-                            {
-                                if(USERS[i].tag != user.tag) db::userSync(&USERS[i]);
-                            }
-                        }
-                        has_wifi = newStatus;
+                        for(int i = 0; i < USERS.size(); i++) db::userSync(&USERS[i]);
 
                         // Ispisivanje statusa u terminal za debugging i pištanje na arduinu
                         if(user.isPresent)
